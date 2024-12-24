@@ -1,6 +1,6 @@
 public class App {
-    public static void main(String[] args) throws Exception {
-        Minesweeper minesweeper = new Minesweeper();
-
+    public static void main(String[] args) {
+        MinesweeperGUI gui = new MinesweeperGUI();
+        gui.startAutoPlay();
     }
 }
