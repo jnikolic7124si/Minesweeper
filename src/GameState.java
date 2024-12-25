@@ -81,6 +81,11 @@ public class GameState {
         }
         return true;
     }
+    public void flag(int row, int col) {
+        if (isValid(row, col)) {
+            flagged[row][col] = true;
+        }
+    }
 
 
 }

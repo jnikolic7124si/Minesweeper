@@ -35,23 +35,32 @@ public class MinesweeperBot {
         for (int r = 0; r < gameState.getRows(); r++) {
             for (int c = 0; c < gameState.getCols(); c++) {
                 if (!gameState.isRevealed(r, c) && !gameState.isFlagged(r, c)) {
-                    if (gameState.isMine(r, c)) {
-                        continue;
-                    }
-
                     int adjacentMines = gameState.countAdjacentMines(r, c);
+
                     if (adjacentMines == 0) {
                         autoOpenAdjacent(r, c);
                         madeMove = true;
                     } else if (adjacentMines > 0) {
-                        gameState.reveal(r, c);
-                        gui.updateButton(r, c);
-                        madeMove = true;
+                        int hiddenNeighbors = 0;
+                        int flaggedNeighbors = 0;
 
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        for (int i = r - 1; i <= r + 1; i++) {
+                            for (int j = c - 1; j <= c + 1; j++) {
+                                if (i >= 0 && i < gameState.getRows() && j >= 0 && j < gameState.getCols()) {
+                                    if (!gameState.isRevealed(i, j) && !gameState.isFlagged(i, j)) {
+                                        hiddenNeighbors++;
+                                    } else if (gameState.isFlagged(i, j)) {
+                                        flaggedNeighbors++;
+                                    }
+                                }
+                            }
+                        }
+                        if (hiddenNeighbors == adjacentMines - flaggedNeighbors) {
+                            flagAdjacent(r, c);
+                            madeMove = true;
+                        } else if (adjacentMines == flaggedNeighbors) {
+                            autoOpenAdjacent(r, c);
+                            madeMove = true;
                         }
                     }
                 }
@@ -59,6 +68,8 @@ public class MinesweeperBot {
         }
         return madeMove;
     }
+
+
     private void autoOpenAdjacent(int row, int col) {
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
@@ -94,7 +105,7 @@ public class MinesweeperBot {
         List<int[]> flaggedMoves = new ArrayList<>();
         for (int r = 0; r < gameState.getRows(); r++) {
             for (int c = 0; c < gameState.getCols(); c++) {
-                if (!gameState.isRevealed(r, c)) {
+                if (!gameState.isRevealed(r, c) && !gameState.isFlagged(r, c)) {
                     if (gameState.isMine(r, c)) {
                         continue;
                     }
@@ -112,6 +123,7 @@ public class MinesweeperBot {
             int[] move = safeMoves.get(0);
             gameState.reveal(move[0], move[1]);
             gui.updateButton(move[0], move[1]);
+            System.out.println("Revealed safe move at (" + move[0] + ", " + move[1] + ")");
 
             try {
                 Thread.sleep(200);
@@ -119,5 +131,26 @@ public class MinesweeperBot {
                 e.printStackTrace();
             }
         }
+        if (!flaggedMoves.isEmpty()) {
+            for (int[] move : flaggedMoves) {
+                gameState.flag(move[0], move[1]);
+                gui.updateButton(move[0], move[1]);
+                System.out.println("Flagged mine at (" + move[0] + ", " + move[1] + ")");
+            }
+        }
     }
-}
+
+    private void flagAdjacent(int r, int c) {
+        for (int i = r - 1; i <= r + 1; i++) {
+            for (int j = c - 1; j <= c + 1; j++) {
+                if (i >= 0 && i < gameState.getRows() && j >= 0 && j < gameState.getCols()) {
+                    if (!gameState.isRevealed(i, j) && !gameState.isFlagged(i, j)) {
+                        gameState.flag(i, j);
+                        gui.updateButton(i, j);
+                    }
+                }
+            }
+        }
+    }
+    }
+
